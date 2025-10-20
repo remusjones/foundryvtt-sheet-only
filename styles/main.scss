@@ -41,10 +41,11 @@
 
 
 .sheet-only-container > .button-container {
+  position: absolute;
+  left: calc(56px + env(safe-area-inset-left) + 8px);
   display: flex;
   flex-direction: row;
   z-index: 1000;
-  position: absolute;
 }
 
 #so-main-buttons, #so-settings-buttons, #so-menu-button {
