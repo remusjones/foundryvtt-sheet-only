@@ -9,6 +9,11 @@
   display: none !important;
 }
 
+.sheet-only-sheet > header,
+.sheet-only-sheet .window-header {
+  -webkit-app-region: no-drag !important;
+}
+
 .sheet-only-sheet,
 .sheet-only-sheet * {
   -webkit-app-region: no-drag !important;
@@ -51,7 +56,6 @@
 .sheet-only-container > .small-display-main-buttons .button > i {
   vertical-align: middle;
 }
-
 
 .sheet-only-container > .button-container {
   position: absolute;
