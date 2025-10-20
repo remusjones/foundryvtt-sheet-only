@@ -4,6 +4,19 @@
   display: none;
 }
 
+.sheet-only-sheet button.header-control.icon.fa-solid.fa-xmark[data-action="close"],
+.sheet-only-sheet button[aria-label="Close Window"][data-action="close"] {
+  display: none !important;
+}
+
+.sheet-only-sheet,
+.sheet-only-sheet * {
+  -webkit-app-region: no-drag !important;
+  cursor: default !important;
+  pointer-events: auto !important;
+  user-select: auto !important;
+}
+
 .sheet-only-sheet {
   position: relative;
   width: 100vw;
