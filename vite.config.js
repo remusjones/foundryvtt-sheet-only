@@ -1,8 +1,14 @@
 
 import { defineConfig } from 'vite';
 import copy from 'rollup-plugin-copy';
+import { fileURLToPath } from 'url';
+import { dirname, resolve } from 'path';
 
-const s_PACKAGE_ID = 'modules/sheet-only';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+
+const s_PACKAGE_ID = 'modules/sheet-only-remus';
 
 export default defineConfig({
   root: 'src',

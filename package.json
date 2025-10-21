@@ -1,5 +1,6 @@
 {
   "name": "sheet-only",
+  "type": "module",
   "version": "0.0.0",
   "description": "Provides a fullscreen character sheet to use on tablets",
   "private": true,
