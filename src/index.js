@@ -39,7 +39,13 @@ Hooks.on('renderActorSheetV2', async (app, _sheet, {actor}) => {
     await onRenderActorSheetV2(app, _sheet, actor);
 });
 
-Hooks.on('renderActorSheet', async (app, _sheet, {actor}) => {
+Hooks.on('renderActorSheet', async (app, /** @type {jQuery} */ _sheet, {actor}) => {
+    if(game.system.id === "pf2e"){
+        if(_sheet.hasClass('spellcasting-entry') && _sheet.hasClass('preparation')) {
+            _sheet.addClass("sheet-only-sheet");
+            return;
+        }
+    }
     await onRenderActorSheetV2(app, _sheet, actor);
 });
 
