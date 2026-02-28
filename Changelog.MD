@@ -1,3 +1,6 @@
+# 2.3.3
+- Fixes sheet header. Header buttons (except the close button) are now displayed. 
+
 # 2.3.1
 - Fixes styling issues for smartphones
 
