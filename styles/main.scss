@@ -1,6 +1,16 @@
 /*Sheet Only Styling*/
 .sheet-only-hide,
 .sheet-only-sheet:not(.dnd5e2) {
+.sheet-only-hide {
+  display: none;
+}
+
+// Disables the sheet's close button
+.sheet-only-sheet > .window-header > button[data-action="close"] {
+  display: none;
+}
+
+.sheet-only-sheet > .window-resize-handle{
   display: none;
 }
 
@@ -28,7 +38,6 @@
   height: 100dvh !important;
   transform-origin: top left;
   max-height: unset;
-
 }
 
 .sheet-only-container {
@@ -63,6 +72,8 @@
   display: flex;
   flex-direction: row;
   z-index: 1000;
+  position: absolute;
+  left: 5rem;
 }
 
 #so-main-buttons, #so-settings-buttons, #so-menu-button {

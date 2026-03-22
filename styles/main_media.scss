@@ -1,4 +1,4 @@
-@media (max-width: 800px) {
+@media (max-width: 630px) {
     .sheet-only-sheet.small-display  {
         margin-top: 0;
         margin-bottom: 0;
@@ -25,6 +25,7 @@
 
     #so-main-buttons.small-display > button {
         height: 100%;
+        width: 100%;
     }
 
     #so-main-buttons.small-display > button > i {
@@ -67,6 +68,10 @@
         transform: translateX(-50%);
         max-width: 100vw;
     }
+
+  .window-resize-handle {
+    display: none;
+  }
 }
 
 
