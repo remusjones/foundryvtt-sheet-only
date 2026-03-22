@@ -1,7 +1,6 @@
 import {moduleId} from "./settings.js";
 import {isSheetOnly} from "./utils";
 import {renderOnSidebar} from "./sidebar";
-import {makeWindowPersistent} from "./popout-utils";
 
 let chatPopout;
 
@@ -19,7 +18,6 @@ function popoutChat() {
                 chatPopout = popout;
 
                 chatPopout.classList.add("so-draggable");
-                makeWindowPersistent(chatPopout);
 
                 if(window.innerWidth > 800) {
                     renderOnSidebar(popout);

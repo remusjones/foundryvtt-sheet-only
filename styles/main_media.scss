@@ -76,25 +76,36 @@
   }
 }
 
-/* Touch-friendly improvements for popout windows on touch devices */
+/* Touch-friendly improvements for popout windows on touch devices.
+   Selectors cover both ApplicationV1 (.window-app) and
+   ApplicationV2 (.application) from Foundry v13. */
 @media (pointer: coarse) {
-  /* Larger resize handle */
-  .window-app:not(.sheet-only-sheet) .window-resizable-handle {
+  /* touch-action:none on headers prevents the browser from treating a header
+     drag as a pan/scroll gesture.  Without this the browser fires touchcancel
+     and steals the touch before our drag handler can move the window. */
+  .window-app:not(.sheet-only-sheet) .window-header,
+  .window-app:not(.sheet-only-sheet) header,
+  .application:not(.sheet-only-sheet) .window-header,
+  .application:not(.sheet-only-sheet) header {
+    touch-action: none;
+    cursor: grab;
+  }
+
+  /* Larger, touch-friendly resize handle */
+  .window-app:not(.sheet-only-sheet) .window-resizable-handle,
+  .window-app:not(.sheet-only-sheet) .window-resize-handle,
+  .window-app:not(.sheet-only-sheet) [data-action="resize"],
+  .application:not(.sheet-only-sheet) .window-resizable-handle,
+  .application:not(.sheet-only-sheet) .window-resize-handle,
+  .application:not(.sheet-only-sheet) [data-action="resize"] {
     display: block !important;
-    width: 44px;
-    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
     bottom: 0;
     right: 0;
     opacity: 0.6;
     cursor: se-resize;
-  }
-
-  /* Allow pointer events on window headers so Foundry's drag handler fires
-     without the browser stealing the touch as a scroll gesture */
-  .window-app:not(.sheet-only-sheet) .window-header,
-  .window-app:not(.sheet-only-sheet) header {
     touch-action: none;
-    cursor: grab;
   }
 }
 

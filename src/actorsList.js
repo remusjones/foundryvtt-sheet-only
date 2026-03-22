@@ -83,7 +83,10 @@ export function toggleActorList() {
 
     if (isOpen) {
         setTimeout(() => {
-            $(document).one('pointerdown', function (e) {
+            // Use 'click' instead of 'pointerdown' so the touchGuard's
+            // stopImmediatePropagation() on pointerdown doesn't prevent this
+            // handler from firing when a popup dialog is open.
+            $(document).one('click', function (e) {
                 if (!$(e.target).closest('.sheet-only-actor-list').length &&
                     !$(e.target).closest('#so-collapse-actor-select').length) {
                     list.addClass('collapse');
