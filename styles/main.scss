@@ -88,6 +88,11 @@ body.sheet-only-active {
   z-index: 1000;
 }
 
+/* Prevent browser scroll from competing with the long-press drag gesture */
+.so-draggable {
+  touch-action: none;
+}
+
 #so-main-buttons, #so-settings-buttons, #so-menu-button {
   display: flex;
   flex-direction: row;

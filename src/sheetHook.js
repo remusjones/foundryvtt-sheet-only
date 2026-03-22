@@ -18,11 +18,19 @@ export async function onRenderActorSheetV2(app, _sheet, actor) {
         height: window.innerHeight
     });
 
-    if (app.classList) {
-        app.classList.add('sheet-only-sheet');
+    // Resolve the root DOM element regardless of Foundry version:
+    //   v13 ApplicationV2 → app.element is an HTMLElement
+    //   v12 ApplicationV2 → app.element may be an HTMLElement or jQuery-like
+    //   v11 Application   → _sheet is a jQuery object
+    const rootEl = app.element instanceof HTMLElement ? app.element
+        : app.element?.[0] instanceof HTMLElement    ? app.element[0]
+        : _sheet    instanceof HTMLElement            ? _sheet
+        : null;
 
+    if (rootEl) {
+        rootEl.classList.add('sheet-only-sheet');
     } else {
-        _sheet.addClass('sheet-only-sheet');
+        $(_sheet).addClass('sheet-only-sheet');
     }
 
     $(".window-resizable-handle").hide();

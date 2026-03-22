@@ -1,5 +1,6 @@
 import {renderOnSidebar} from "./sidebar";
 import {isSheetOnly} from "./utils";
+import {makeWindowPersistent} from "./popout-utils";
 
 let journalPopout;
 
@@ -20,6 +21,7 @@ export function openJournal() {
     game.journal.apps[0]?.renderPopout().then(journalApp => {
         journalPopout = journalApp;
         journalPopout.classList.add("so-draggable");
+        makeWindowPersistent(journalPopout);
 
         if (window.innerWidth > 800) {
             renderOnSidebar(journalPopout);

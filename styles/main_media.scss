@@ -69,8 +69,32 @@
         max-width: 100vw;
     }
 
-  .window-resize-handle {
+  /* Hide resize handle on the main sheet, but keep it for popout windows */
+  .sheet-only-sheet .window-resize-handle,
+  .sheet-only-sheet .window-resizable-handle {
     display: none;
+  }
+}
+
+/* Touch-friendly improvements for popout windows on touch devices */
+@media (pointer: coarse) {
+  /* Larger resize handle */
+  .window-app:not(.sheet-only-sheet) .window-resizable-handle {
+    display: block !important;
+    width: 44px;
+    height: 44px;
+    bottom: 0;
+    right: 0;
+    opacity: 0.6;
+    cursor: se-resize;
+  }
+
+  /* Allow pointer events on window headers so Foundry's drag handler fires
+     without the browser stealing the touch as a scroll gesture */
+  .window-app:not(.sheet-only-sheet) .window-header,
+  .window-app:not(.sheet-only-sheet) header {
+    touch-action: none;
+    cursor: grab;
   }
 }
 

@@ -6,16 +6,24 @@ let hasMoved = false;
 let pressTimer;
 let longPressDuration;
 
+// Tracks a pending drag before it officially starts
+let pendingContainer = null;
+let pendingEvent     = null;
+let pendingStartX    = 0;
+let pendingStartY    = 0;
+
+/** Movement in px required to start a drag immediately (without waiting for long-press) */
+const MOVE_THRESHOLD = 12;
 const scaleUpTo = 1.08;
 
 export function initDragListener() {
     document.addEventListener('mousedown', handleStart, false);
-    document.addEventListener('touchstart', handleStart, false);
+    document.addEventListener('touchstart', handleStart, { passive: false });
 
     document.addEventListener('mousemove', dragMove, false);
-    document.addEventListener('touchmove', dragMove, { passive: true });
+    document.addEventListener('touchmove', dragMove, { passive: false });
 
-    document.addEventListener('mouseup', dragEnd, false);
+    document.addEventListener('mouseup',  dragEnd, false);
     document.addEventListener('touchend', dragEnd, false);
 
     longPressDuration = getDuration();
@@ -30,11 +38,19 @@ function handleStart(event) {
 
     hasMoved = false;
 
-    let container = findAncestor(event.target, '.so-draggable');
-    if (container) {
-        // Initiate the press timer.
-        pressTimer = window.setTimeout(() => dragStart(event, container), longPressDuration);
-    }
+    const container = findAncestor(event.target, '.so-draggable');
+    if (!container) return;
+
+    const touch = event.touches?.[0];
+    pendingContainer = container;
+    pendingEvent     = event;
+    pendingStartX    = touch ? touch.clientX : event.clientX;
+    pendingStartY    = touch ? touch.clientY : event.clientY;
+
+    // Long-press fallback: start drag even without movement
+    pressTimer = window.setTimeout(() => {
+        if (pendingContainer) dragStart(pendingEvent, pendingContainer);
+    }, longPressDuration);
 }
 
 function findAncestor(el, sel) {
@@ -47,6 +63,9 @@ export function wasDragged() {
 }
 
 function dragStart(event, container) {
+    clearTimeout(pressTimer);
+    pendingContainer = null;
+
     event.preventDefault();
     event.stopPropagation();
 
@@ -54,87 +73,77 @@ function dragStart(event, container) {
     selectedElement.classList.add('dragged');
     hasMoved = true;
 
-    let { x, y } = getPosition();
-
-    xOffset = (event.clientX || event.touches[0].clientX) - x;
-    yOffset = (event.clientY || event.touches[0].clientY) - y;
+    const { x, y } = getPosition();
+    const touch = event.touches?.[0];
+    xOffset = (touch ? touch.clientX : event.clientX) - x;
+    yOffset = (touch ? touch.clientY : event.clientY) - y;
 
     selectedElement.style.transform = `translate(${x}px, ${y}px) scale(${scaleUpTo})`;
-
 }
 
 function dragMove(event) {
+    const touch = event.touches?.[0];
+    const cx = touch ? touch.clientX : event.clientX;
+    const cy = touch ? touch.clientY : event.clientY;
+
+    // Start drag immediately if finger has moved far enough
+    if (pendingContainer && !selectedElement) {
+        const dx = cx - pendingStartX;
+        const dy = cy - pendingStartY;
+        if (Math.sqrt(dx * dx + dy * dy) >= MOVE_THRESHOLD) {
+            dragStart(pendingEvent, pendingContainer);
+        }
+    }
+
     if (selectedElement) {
+        event.preventDefault();
         event.stopPropagation();
 
-        let xPosition = (event.clientX || event.touches[0].clientX) - xOffset;
-        let yPosition = (event.clientY || event.touches[0].clientY) - yOffset;
+        const xPosition = cx - xOffset;
+        const yPosition = cy - yOffset;
 
-        // Apply transform using translate for positional adjustments and keep the scale constant
-        selectedElement.style.transform = `translate(${xPosition}px, ${yPosition}px) scale(${scaleUpTo})`;
+        selectedElement.style.transform =
+            `translate(${xPosition}px, ${yPosition}px) scale(${scaleUpTo})`;
     }
 }
 
 function dragEnd(event) {
     clearTimeout(pressTimer);
+    pendingContainer = null;
 
     if (selectedElement) {
         event.stopPropagation();
 
-        let { x, y } = getPosition();
-
-        // Reset the scale to 1.0 and maintain the final position using translate
+        const { x, y } = getPosition();
         selectedElement.style.transform = `translate(${x}px, ${y}px) scale(1)`;
-
         selectedElement.classList.remove('dragged');
-
         applyTransformation(selectedElement);
-
         selectedElement = null;
     }
 }
 
 function getPosition() {
-    const elementStyle = window.getComputedStyle(selectedElement);
-    const transform = elementStyle.transform;
-    let xPosition = 0;
-    let yPosition = 0;
-
+    const transform = window.getComputedStyle(selectedElement).transform;
     if (transform && transform !== 'none') {
-        const matrix = new WebKitCSSMatrix(transform);
-        xPosition = matrix.m41;
-        yPosition = matrix.m42;
+        const m = new DOMMatrix(transform);
+        return { x: m.m41, y: m.m42 };
     }
-
-    return { x: xPosition, y: yPosition };
+    return { x: 0, y: 0 };
 }
 
 /**
- * Applies the transformation to left and top so that if foundry triggers a new render, the window won't jump
- * to its original position
- * @param element The dragged element
+ * Converts the current CSS transform into explicit left/top values so that
+ * a Foundry re-render does not snap the element back to its original position.
+ * @param {HTMLElement} element
  */
 function applyTransformation(element) {
-    const computedStyle = getComputedStyle(element);
-
-    // Extract transformation values
-    const transform = computedStyle.transform;
+    const style     = getComputedStyle(element);
+    const transform = style.transform;
 
     if (transform !== 'none') {
-        // Parse the transform matrix
-        const matrix = transform.match(/matrix\(([^)]+)\)/)[1].split(', ').map(parseFloat);
-
-        // Translate values from the matrix
-        const translateX = matrix[4];
-        const translateY = matrix[5];
-
-        // Calculate the new top and left positions
-        const translatedLeft = parseFloat(computedStyle.left) + translateX;
-        const translatedTop = parseFloat(computedStyle.top) + translateY;
-
-        // Apply the calculated position and reset transformation
+        const m = new DOMMatrix(transform);
         element.style.transform = 'none';
-        element.style.left =  `${translatedLeft}px`;
-        element.style.top = `${translatedTop}px`;
+        element.style.left = `${parseFloat(style.left) + m.m41}px`;
+        element.style.top  = `${parseFloat(style.top)  + m.m42}px`;
     }
 }

@@ -8,6 +8,7 @@ import {onCreateActor, onDeleteActor} from "./actorHook";
 import {onCloseUserConfig, onRenderSettingsConfig} from "./configHook";
 import integrateLame from "./third-party-modules/lame";
 import {onRenderJournalDirectory} from "./journal";
+import {protectFromOutsideClose, registerWindow} from "./touchGuard";
 
 /* global Hooks */
 // CONFIG.debug.hooks = true;
@@ -71,4 +72,17 @@ Hooks.on('renderSettingsConfig', async (app, element, settings) => {
 
 Hooks.on('renderJournalDirectory', async (app, html, data) => {
     onRenderJournalDirectory(app, html);
+});
+
+// Register every rendered popup window with the touch guard so outside taps
+// don't accidentally dismiss it on a touch device.
+// 'render'              → ApplicationV1
+// 'renderApplicationV2' → ApplicationV2 and all subclasses (Foundry v13)
+Hooks.on('render', (app) => {
+    protectFromOutsideClose(app);
+    registerWindow(app);
+});
+Hooks.on('renderApplicationV2', (app) => {
+    protectFromOutsideClose(app);
+    registerWindow(app);
 });

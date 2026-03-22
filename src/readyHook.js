@@ -8,6 +8,8 @@ import * as FirefoxZoom from "./firefoxZoom";
 import * as DefaultZoom from "./defaultZoom";
 import {popupSheet} from "./sheet";
 import {currentSheet} from "./sheetHook";
+import {initTouchGuard} from "./touchGuard";
+import {initWindowDrag} from "./windowDrag";
 
 export async function onReady() {
     if (!isSheetOnly()) {
@@ -24,6 +26,8 @@ export async function onReady() {
     await userInitialization();
 
     $('body').addClass('sheet-only-active');
+    initTouchGuard();
+    initWindowDrag();
     setupContainer();
     rebuildActorList()
     await popupSheet();

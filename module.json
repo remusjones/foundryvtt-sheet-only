@@ -32,20 +32,12 @@
       "flags": {}
     }
   ],
-  "esmodules": [
-    "index.js"
-  ],
-  "styles": [
-    "style.css"
-  ],
+  "esmodules": ["index.js"],
+  "styles": ["style.css"],
   "flags": {
     "hotReload": {
-      "extensions": [
-        "json"
-      ],
-      "paths": [
-        "lang"
-      ]
+      "extensions": ["json"],
+      "paths": ["lang"]
     }
   },
   "socket": true,
@@ -54,4 +46,3 @@
   "manifest": "${module-endpoint}",
   "download": "${download-endpoint}"
 }
-
