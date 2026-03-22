@@ -75,10 +75,21 @@ function setCurrentActorTokenAsControlled() {
 }
 
 export function toggleActorList() {
-    $('.sheet-only-actor-list').toggleClass('collapse');
-    if ($('.sheet-only-actor-list.collapse')) {
-        localStorage.setItem("collapsed-actor-select", "true");
-    } else {
-        localStorage.setItem("collapsed-actor-select", "false");
+    const list = $('.sheet-only-actor-list');
+    list.toggleClass('collapse');
+
+    const isOpen = !list.hasClass('collapse');
+    localStorage.setItem("collapsed-actor-select", isOpen ? "false" : "true");
+
+    if (isOpen) {
+        setTimeout(() => {
+            $(document).one('click touchstart', function (e) {
+                if (!$(e.target).closest('.sheet-only-actor-list').length &&
+                    !$(e.target).closest('#so-collapse-actor-select').length) {
+                    list.addClass('collapse');
+                    localStorage.setItem("collapsed-actor-select", "true");
+                }
+            });
+        }, 0);
     }
 }

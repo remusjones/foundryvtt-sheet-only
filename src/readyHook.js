@@ -23,6 +23,7 @@ export async function onReady() {
 
     await userInitialization();
 
+    $('body').addClass('sheet-only-active');
     setupContainer();
     rebuildActorList()
     await popupSheet();

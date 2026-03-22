@@ -13,7 +13,7 @@ export function initDragListener() {
     document.addEventListener('touchstart', handleStart, false);
 
     document.addEventListener('mousemove', dragMove, false);
-    document.addEventListener('touchmove', dragMove, false);
+    document.addEventListener('touchmove', dragMove, { passive: true });
 
     document.addEventListener('mouseup', dragEnd, false);
     document.addEventListener('touchend', dragEnd, false);
