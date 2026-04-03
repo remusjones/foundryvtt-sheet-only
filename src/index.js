@@ -8,7 +8,8 @@ import {onCreateActor, onDeleteActor} from "./actorHook";
 import {onCloseUserConfig, onRenderSettingsConfig} from "./configHook";
 import integrateLame from "./third-party-modules/lame";
 import {onRenderJournalDirectory} from "./journal";
-import {protectFromOutsideClose, registerWindow} from "./touchGuard";
+import {registerWindow} from "./touchGuard";
+import {ensureResizeHandle} from "./windowDrag";
 
 /* global Hooks */
 // CONFIG.debug.hooks = true;
@@ -79,10 +80,10 @@ Hooks.on('renderJournalDirectory', async (app, html, data) => {
 // 'render'              → ApplicationV1
 // 'renderApplicationV2' → ApplicationV2 and all subclasses (Foundry v13)
 Hooks.on('render', (app) => {
-    protectFromOutsideClose(app);
     registerWindow(app);
+    ensureResizeHandle(app);
 });
 Hooks.on('renderApplicationV2', (app) => {
-    protectFromOutsideClose(app);
     registerWindow(app);
+    ensureResizeHandle(app);
 });

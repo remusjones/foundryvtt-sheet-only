@@ -18,7 +18,7 @@ const scaleUpTo = 1.08;
 
 export function initDragListener() {
     document.addEventListener('mousedown', handleStart, false);
-    document.addEventListener('touchstart', handleStart, { passive: false });
+    document.addEventListener('touchstart', handleStart, { passive: true });
 
     document.addEventListener('mousemove', dragMove, false);
     document.addEventListener('touchmove', dragMove, { passive: false });
@@ -40,6 +40,13 @@ function handleStart(event) {
 
     const container = findAncestor(event.target, '.so-draggable');
     if (!container) return;
+
+    // For popup windows, only drag from the title bar — not from the content
+    // area — so that scrolling .window-content isn't hijacked as a window drag.
+    if (container.matches('.window-app, .application')) {
+        const header = event.target.closest('.window-header, header');
+        if (!header || !container.contains(header)) return;
+    }
 
     const touch = event.touches?.[0];
     pendingContainer = container;

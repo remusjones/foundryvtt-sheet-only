@@ -48,10 +48,6 @@ export function registerWindow(app) {
     _registry.add(el);
 }
 
-// Keep legacy exports so other files compile without changes
-export function patchApplicationV2() {}
-export function protectFromOutsideClose() {}
-
 // ---------------------------------------------------------------------------
 // Internal
 // ---------------------------------------------------------------------------

@@ -60,7 +60,7 @@ export async function switchToActor(actor, render = true) {
     actorStorage.current = actor;
     if (render) await actor.sheet.render(true);
 
-    setCurrentActorTokenAsControlled(actor);
+    setCurrentActorTokenAsControlled();
     saveLastActorId(actorStorage.current.id);
 }
 
@@ -83,10 +83,12 @@ export function toggleActorList() {
 
     if (isOpen) {
         setTimeout(() => {
-            // Use 'click' instead of 'pointerdown' so the touchGuard's
-            // stopImmediatePropagation() on pointerdown doesn't prevent this
-            // handler from firing when a popup dialog is open.
-            $(document).one('click', function (e) {
+            // Use 'pointerup' instead of 'click': iOS only fires synthetic click
+            // events on interactive elements, so tapping the sheet background
+            // (a plain div) would never trigger a 'click' handler.  pointerup
+            // always fires on touch regardless of element type, and is unaffected
+            // by touchGuard's stopImmediatePropagation() on pointerdown.
+            $(document).one('pointerup', function (e) {
                 if (!$(e.target).closest('.sheet-only-actor-list').length &&
                     !$(e.target).closest('#so-collapse-actor-select').length) {
                     list.addClass('collapse');

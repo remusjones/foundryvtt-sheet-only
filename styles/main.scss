@@ -4,17 +4,12 @@
 }
 
 // Disables the sheet's close button
-.sheet-only-sheet > .window-header > button[data-action="close"] {
-  display: none;
-}
-
-.sheet-only-sheet > .window-resize-handle{
-  display: none;
-}
-
-.sheet-only-sheet button.header-control.icon.fa-solid.fa-xmark[data-action="close"],
-.sheet-only-sheet button[aria-label="Close Window"][data-action="close"] {
+.sheet-only-sheet button[data-action="close"] {
   display: none !important;
+}
+
+.sheet-only-sheet > .window-resize-handle {
+  display: none;
 }
 
 .sheet-only-sheet > header,
@@ -88,8 +83,12 @@ body.sheet-only-active {
   z-index: 1000;
 }
 
-/* Prevent browser scroll from competing with the long-press drag gesture */
-.so-draggable {
+/* Prevent browser scroll from competing with the long-press drag gesture.
+   Only applied to non-window draggables (e.g. the button container).
+   Popup windows (.window-app/.application) rely on touch-action:none on
+   their header (set in main_media.scss) — applying none to the whole window
+   would block scroll inside .window-content. */
+.so-draggable:not(.window-app):not(.application) {
   touch-action: none;
 }
 
@@ -98,6 +97,33 @@ body.sheet-only-active {
   flex-direction: row;
   justify-content: flex-start;
   align-items: center;
+}
+
+/* Ensure popup windows are positioned so our injected .so-resize-handle
+   (position:absolute) is anchored to the window corner, not the viewport. */
+body > .window-app:not(.sheet-only-sheet),
+body > .application:not(.sheet-only-sheet) {
+  position: absolute;
+}
+
+/* Injected resize handle — always visible at bottom-right of every popup window */
+.so-resize-handle {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(0, 0, 0, 0.35);
+  border-top-left-radius: 6px;
+  cursor: se-resize;
+  z-index: 10;
+  user-select: none;
+  pointer-events: auto;
 }
 
 .sheet-only-container ~ .dialog {

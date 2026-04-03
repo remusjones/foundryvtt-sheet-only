@@ -5,13 +5,13 @@
  * which can be cancelled by the browser on touch devices when it decides a
  * touch is a pan/scroll gesture.  This file owns those interactions for touch:
  *
- * DRAG  – non-".so-draggable" popup windows (drag.js owns .so-draggable).
- *         Reads touchstart to capture initial position, touchmove to update
- *         style.left/top directly.
+ * DRAG   – non-".so-draggable" popup windows (drag.js owns .so-draggable).
+ *          Touch the title bar to drag; touchmove updates style.left/top.
  *
- * RESIZE – all popup windows.
- *          Reads touchstart on the resize handle, touchmove to update
- *          style.width/height directly.
+ * RESIZE – all popup windows via an injected .so-resize-handle at bottom-right.
+ *          We inject our own handle so its position is always bottom: 0; right: 0
+ *          relative to the window, regardless of where Foundry places its native
+ *          resize element.
  *
  * FOUNDRY CONFLICT – Foundry registers pointerdown handlers on headers/resize
  *   handles that start their own drag/resize.  On touch, these run in parallel
@@ -34,11 +34,36 @@ export function initWindowDrag() {
     // implementation has sole control over window position/size.
     document.addEventListener('pointerdown', _onPointerDown, { capture: true });
 
-    // Touch drag and resize (passive:false so we can preventDefault on move)
-    document.addEventListener('touchstart', _onTouchStart, { passive: false });
+    // touchstart is passive: touch-action:none CSS on headers/handles already
+    // tells the browser not to scroll there, so we don't need preventDefault().
+    // Passive lets the browser start scrolling the sheet content immediately
+    // without waiting for this handler, which is critical for landscape mode.
+    document.addEventListener('touchstart', _onTouchStart, { passive: true });
     document.addEventListener('touchmove',  _onTouchMove,  { passive: false });
     document.addEventListener('touchend',   _onTouchEnd);
     document.addEventListener('touchcancel', _onTouchEnd);
+}
+
+/**
+ * Inject a .so-resize-handle into a popup window if one isn't already there.
+ * Called from render hooks in index.js so every new popup gets a handle.
+ * @param {Application|ApplicationV2} app
+ */
+export function ensureResizeHandle(app) {
+    const el = app.element instanceof HTMLElement ? app.element
+        : app.element?.[0] instanceof HTMLElement ? app.element[0]
+        : null;
+    if (!el) return;
+
+    const win = el.closest('body > .window-app, body > .application') ?? el;
+    if (!win || win === document.body) return;
+    if (win.classList.contains('sheet-only-sheet')) return;
+    if (win.querySelector('.so-resize-handle')) return; // already injected
+
+    const handle = document.createElement('div');
+    handle.className = 'so-resize-handle';
+    handle.textContent = '⤡';
+    win.appendChild(handle);
 }
 
 // ---------------------------------------------------------------------------
@@ -49,13 +74,19 @@ function _onPointerDown(event) {
     if (event.pointerType === 'mouse') return;
     const target = event.target;
 
-    // Resize handle on a popup
+    // Our injected resize handle — block Foundry so only our touchmove runs
+    if (target.closest('.so-resize-handle')) {
+        event.stopPropagation();
+        return;
+    }
+
+    // Foundry's native resize handles (block those too)
     const resizeHandle = target.closest(
         '[data-action="resize"], .window-resizable-handle, .window-resize-handle'
     );
     if (resizeHandle) {
         const win = _popupWindow(resizeHandle);
-        if (win) event.stopPropagation(); // block Foundry's resize handler
+        if (win) event.stopPropagation();
         return;
     }
 
@@ -80,14 +111,10 @@ function _onTouchStart(event) {
     const target = event.target;
     const t = event.touches[0];
 
-    // ── Resize ───────────────────────────────────────────────────────────────
-    const resizeHandle = target.closest(
-        '[data-action="resize"], .window-resizable-handle, .window-resize-handle'
-    );
-    if (resizeHandle) {
-        const win = _popupWindow(resizeHandle);
+    // ── Resize via our injected handle ───────────────────────────────────────
+    if (target.closest('.so-resize-handle')) {
+        const win = _popupWindow(target);
         if (win) {
-            event.preventDefault(); // prevent scroll from starting on resize handle
             _state = {
                 type:   'resize',
                 el:     win,
@@ -108,7 +135,6 @@ function _onTouchStart(event) {
     if (!win) return;
     if (win.classList.contains('so-draggable')) return; // drag.js owns these
 
-    event.preventDefault(); // prevent browser treating this as a pan
     _state = {
         type:      'drag',
         el:        win,

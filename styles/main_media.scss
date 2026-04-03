@@ -1,3 +1,4 @@
+
 @media (max-width: 630px) {
     .sheet-only-sheet.small-display  {
         margin-top: 0;
@@ -89,24 +90,54 @@
   .application:not(.sheet-only-sheet) header {
     touch-action: none;
     cursor: grab;
+    position: relative;
   }
 
-  /* Larger, touch-friendly resize handle */
-  .window-app:not(.sheet-only-sheet) .window-resizable-handle,
-  .window-app:not(.sheet-only-sheet) .window-resize-handle,
-  .window-app:not(.sheet-only-sheet) [data-action="resize"],
-  .application:not(.sheet-only-sheet) .window-resizable-handle,
-  .application:not(.sheet-only-sheet) .window-resize-handle,
-  .application:not(.sheet-only-sheet) [data-action="resize"] {
-    display: block !important;
-    min-width: 44px;
-    min-height: 44px;
-    bottom: 0;
-    right: 0;
-    opacity: 0.6;
-    cursor: se-resize;
+  /* touch-action:none on our injected handle so the browser doesn't
+     steal the touch as a pan gesture before our touchmove fires. */
+  .so-resize-handle {
     touch-action: none;
   }
+
+  /* ── Main character sheet touch-scroll ──────────────────────────────────────
+     Foundry/DND5e set overflow:hidden on section.window-content and .sheet-body,
+     which clips content in landscape where the viewport is short.
+     Fix: make section.window-content the scroll container (overflow-y:auto,
+     min-height:0 so flex allows it to shrink to viewport), and let .sheet-body
+     grow to its natural content height (overflow:visible, flex:none) so its
+     full content contributes to section.window-content's scrollHeight.
+     Verified in browser: scrollTop responds correctly with this chain. */
+  .sheet-only-sheet section.window-content {
+    overflow-y: auto !important;
+    min-height: 0;
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Allow touch scrolling within popup window content.
+     touch-action: pan-y ensures vertical swipe is treated as scroll, not
+     captured by any ancestor's touch-action: none.
+     overflow-y: auto + -webkit-overflow-scrolling enable momentum scroll on iOS. */
+  .window-app:not(.sheet-only-sheet) .window-content,
+  .application:not(.sheet-only-sheet) .window-content,
+  .application:not(.sheet-only-sheet) section.window-content {
+    touch-action: pan-y !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* DND5e v4: .sheet-body holds the tab content and clips it with overflow:hidden.
+     In landscape only — flex:none lets it grow to its natural content height so
+     the full content reaches the section.window-content scroll container above.
+     In portrait .sheet-body keeps flex:1 so it fills the remaining screen space. */
+  @media (orientation: landscape) {
+    .sheet-only-sheet .sheet-body {
+      overflow: visible !important;
+      height: auto !important;
+      flex: none !important;
+    }
+  }
+
 }
 
 
